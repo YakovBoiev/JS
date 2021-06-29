@@ -22,7 +22,7 @@ function getNumberRanks (number){
     };
     if (number < 0 || number > 999){
         console.log ('Число не входит в диапазон от 0 до 999');
-        return obj;
+        return {};
     }
     obj.changeUnits(number % 10);
     number = parseInt(number / 10);
