@@ -3,7 +3,7 @@ const settings = {
   rowsCount: 21,
   colsCount: 21,
   speed: 2,
-  winFoodCount: 50,
+  winFoodCount: 5,
 };
 
 const config = {
@@ -238,6 +238,7 @@ const game = {
     this.snake.init(this.getStartSnakeBody(), 'up');
     this.food.setCoordinates(this.getRandomFreeCoordinates());
     this.render();
+    this.foodCount()
   },
 
   getStartSnakeBody() {
@@ -297,7 +298,7 @@ const game = {
 
       if (this.isGameWon()) this.finish();
     }
-
+    this.foodCount()
     this.snake.makeStep();
     this.render();
   },
@@ -376,6 +377,9 @@ const game = {
 
   render() {
     this.map.render(this.snake.getBody(), this.food.getCoordinates());
+  },
+  foodCount () {
+    document.getElementById('counter').innerHTML = `${snake.body.length - 1}`
   },
 
 };
