@@ -158,6 +158,11 @@ const snake = {
 
     switch(this.direction) {
       case 'up':
+        if (firstPoint.y === 0) {
+          console.log(config.getRowsCount())
+          return {x: firstPoint.x, y: config.getRowsCount() - 1}
+
+        };
         return {x: firstPoint.x, y: firstPoint.y - 1};
       case 'right':
         return {x: firstPoint.x + 1, y: firstPoint.y};
