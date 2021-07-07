@@ -4,6 +4,7 @@ const settings = {
   colsCount: 21,
   speed: 2,
   winFoodCount: 5,
+  seeWalls: false,                                             // в установки добавляю свойство отвечающее за  видимость границ поля
 };
 
 const config = {
@@ -27,6 +28,10 @@ const config = {
 
   getWinFoodCount() {
     return this.settings.winFoodCount;
+  },
+
+  getSeeWalls(){
+    return this.settings.seeWalls                                               //
   },
 
   validate() {
@@ -113,6 +118,7 @@ const snake = {
   body: [],
   direction: null,
   lastStepDirection: null,
+  config,                                                   // добавляю в объект свойство config чтоб иметь данные конфигурации внутри объекта
 
   init(startBody, direction) {
     this.body = startBody;
@@ -158,17 +164,24 @@ const snake = {
 
     switch(this.direction) {
       case 'up':
-        if (firstPoint.y === 0) {
-          console.log(config.getRowsCount())
-          return {x: firstPoint.x, y: config.getRowsCount() - 1}
-
-        };
+        if (!this.config.getSeeWalls() && firstPoint.y === 0) {                        // добавляю ополнительные условие для получения координат
+          return {x: firstPoint.x, y: this.config.getRowsCount() - 1}
+        }
         return {x: firstPoint.x, y: firstPoint.y - 1};
       case 'right':
+        if (!this.config.getSeeWalls() && firstPoint.x === this.config.getColsCount() - 1){
+          return {x: 0, y: firstPoint.y}
+        }
         return {x: firstPoint.x + 1, y: firstPoint.y};
       case 'down':
+        if (!this.config.getSeeWalls() && firstPoint.y === this.config.getRowsCount() - 1){
+          return {x: firstPoint.x, y: 0};
+        }
         return {x: firstPoint.x, y: firstPoint.y + 1};
       case 'left':
+        if (!this.config.getSeeWalls() && firstPoint.x === 0){
+          return {x: this.config.getColsCount() - 1, y: firstPoint.y}
+        }
         return {x: firstPoint.x - 1, y: firstPoint.y};
     }
   },
