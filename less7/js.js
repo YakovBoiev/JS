@@ -90,7 +90,7 @@ const map = {
     }
   },
 
-  render(snakePointsArray, foodPoint, fencePoint) {
+  render(snakePointsArray, foodPoint, fencePointArray) {
     for (const cell of this.usedCells) {
       cell.className = 'cell';
     }
@@ -103,13 +103,15 @@ const map = {
       this.usedCells.push(snakeCell);
     });
 
+    fencePointArray.forEach((point, index) => {
+      const fenceCell = this.cells[`x${point.x}_y${point.y}`]
+      fenceCell.classList.add('fence');
+      this.usedCells.push(fenceCell);
+    });
+
     const foodCell = this.cells[`x${foodPoint.x}_y${foodPoint.y}`];
     foodCell.classList.add('food');
     this.usedCells.push(foodCell);
-
-    const fenceCell = this.cells[`x${fencePoint.x}_y${fencePoint.y}`];
-    fenceCell.classList.add('fence');
-    this.usedCells.push(fenceCell);
 
   },
 };
@@ -208,15 +210,11 @@ const food = {
   },
 };
 
-const fence = {
-  x: 4,
-  y: 4,
+const fence = {                                            // создаю объект припятствие
+  fenceArray: [{x: 4, y: 4}, {x: 5, y: 5}],
 
   getCoordinates() {
-    return {
-      x: this.x,
-      y: this.y,
-    };
+    return this.fenceArray
   },
 
   setCoordinates(point) {
@@ -225,8 +223,10 @@ const fence = {
   },
 
   isOnPoint(point) {
-    return this.x === point.x && this.y === point.y;
-  },
+    return this.getCoordinates().some((fencePoint) => {
+      return fencePoint.x === point.x && fencePoint.y === point.y;
+  })
+  }
 };
 
 const status = {
@@ -296,7 +296,7 @@ const game = {
   },
 
   getRandomFreeCoordinates() {
-    const exclude = [this.food.getCoordinates(), this.fence.getCoordinates(), ...this.snake.getBody()];
+    const exclude = [this.food.getCoordinates(), ...this.fence.getCoordinates(), ...this.snake.getBody()];
 
     while (true) {
       const rndPoint = {
