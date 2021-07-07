@@ -85,7 +85,7 @@ const map = {
     }
   },
 
-  render(snakePointsArray, foodPoint) {
+  render(snakePointsArray, foodPoint, fencePoint) {
     for (const cell of this.usedCells) {
       cell.className = 'cell';
     }
@@ -101,6 +101,11 @@ const map = {
     const foodCell = this.cells[`x${foodPoint.x}_y${foodPoint.y}`];
     foodCell.classList.add('food');
     this.usedCells.push(foodCell);
+
+    const fenceCell = this.cells[`x${fencePoint.x}_y${fencePoint.y}`];
+    fenceCell.classList.add('fence');
+    this.usedCells.push(fenceCell);
+
   },
 };
 
@@ -185,6 +190,27 @@ const food = {
   },
 };
 
+const fence = {
+  x: 4,
+  y: 4,
+
+  getCoordinates() {
+    return {
+      x: this.x,
+      y: this.y,
+    };
+  },
+
+  setCoordinates(point) {
+    this.x = point.x;
+    this.y = point.y;
+  },
+
+  isOnPoint(point) {
+    return this.x === point.x && this.y === point.y;
+  },
+};
+
 const status = {
   condition: null,
 
@@ -214,6 +240,7 @@ const game = {
   map,
   snake,
   food,
+  fence,
   status,
   tickInterval: null,
 
@@ -251,7 +278,7 @@ const game = {
   },
 
   getRandomFreeCoordinates() {
-    const exclude = [this.food.getCoordinates(), ...this.snake.getBody()];
+    const exclude = [this.food.getCoordinates(), this.fence.getCoordinates(), ...this.snake.getBody()];
 
     while (true) {
       const rndPoint = {
@@ -309,7 +336,7 @@ const game = {
 
   canMakeStep() {
     const nextHeadPoint = this.snake.getNextStepHeadPoint();
-    return !this.snake.isOnPoint(nextHeadPoint) &&
+    return !this.snake.isOnPoint(nextHeadPoint) && !this.fence.isOnPoint(nextHeadPoint) &&
         nextHeadPoint.x < this.config.getColsCount() &&
         nextHeadPoint.y < this.config.getRowsCount() &&
         nextHeadPoint.x >= 0 &&
@@ -376,7 +403,7 @@ const game = {
   },
 
   render() {
-    this.map.render(this.snake.getBody(), this.food.getCoordinates());
+    this.map.render(this.snake.getBody(), this.food.getCoordinates(), this.fence.getCoordinates());
   },
   foodCount () {
     document.getElementById('counter').innerHTML = `${snake.body.length - 1}`

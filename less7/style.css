@@ -54,3 +54,7 @@ td.cell{
     text-align: center;
     cursor: auto;
 }
+
+.fence{
+    background: #ffff00;
+}
