@@ -3,7 +3,7 @@ const settings = {
   rowsCount: 21,
   colsCount: 21,
   speed: 2,
-  winFoodCount: 5,
+  winFoodCount: 50,
   seeWalls: false,                                             // в установки добавляю свойство отвечающее за  видимость границ поля
 };
 
@@ -103,7 +103,7 @@ const map = {
       this.usedCells.push(snakeCell);
     });
 
-    fencePointArray.forEach((point, index) => {
+    fencePointArray.forEach((point, index) => {                                 // применение стиля к припятствиям
       const fenceCell = this.cells[`x${point.x}_y${point.y}`]
       fenceCell.classList.add('fence');
       this.usedCells.push(fenceCell);
@@ -166,22 +166,22 @@ const snake = {
 
     switch(this.direction) {
       case 'up':
-        if (!this.config.getSeeWalls() && firstPoint.y === 0) {                        // добавляю ополнительные условие для получения координат
+        if (!this.config.getSeeWalls() && firstPoint.y === 0) {                        // добавляю дополнительные условие для получения координат для прохода через границы поля
           return {x: firstPoint.x, y: this.config.getRowsCount() - 1}
         }
         return {x: firstPoint.x, y: firstPoint.y - 1};
       case 'right':
-        if (!this.config.getSeeWalls() && firstPoint.x === this.config.getColsCount() - 1){
+        if (!this.config.getSeeWalls() && firstPoint.x === this.config.getColsCount() - 1){ // добавляю дополнительные условие для получения координат для прохода через границы поля
           return {x: 0, y: firstPoint.y}
         }
         return {x: firstPoint.x + 1, y: firstPoint.y};
       case 'down':
-        if (!this.config.getSeeWalls() && firstPoint.y === this.config.getRowsCount() - 1){
+        if (!this.config.getSeeWalls() && firstPoint.y === this.config.getRowsCount() - 1){ // // добавляю дополнительные условие для получения координат для прохода через границы поля
           return {x: firstPoint.x, y: 0};
         }
         return {x: firstPoint.x, y: firstPoint.y + 1};
       case 'left':
-        if (!this.config.getSeeWalls() && firstPoint.x === 0){
+        if (!this.config.getSeeWalls() && firstPoint.x === 0){                               //  добавляю дополнительные условие для получения координат для прохода через границы поля
           return {x: this.config.getColsCount() - 1, y: firstPoint.y}
         }
         return {x: firstPoint.x - 1, y: firstPoint.y};
@@ -210,19 +210,18 @@ const food = {
   },
 };
 
-const fence = {                                            // создаю объект припятствие
-  fenceArray: [{x: 4, y: 4}, {x: 5, y: 5}],
+const fence = {                                            // создаю объект 'припятствие'
+  fenceArray: [],
 
-  getCoordinates() {
+  getCoordinates() {                                       // возращает координаты 'припятствий'
     return this.fenceArray
   },
 
-  setCoordinates(point) {
-    this.x = point.x;
-    this.y = point.y;
+  init (coordinates){                                     // инициализирует припятствия по входящим координатами
+   this.fenceArray = [...coordinates]
   },
 
-  isOnPoint(point) {
+  isOnPoint(point) {                                                  // проверяет принадлежит ли точка 'припятствиям'
     return this.getCoordinates().some((fencePoint) => {
       return fencePoint.x === point.x && fencePoint.y === point.y;
   })
@@ -258,7 +257,7 @@ const game = {
   map,
   snake,
   food,
-  fence,
+  fence,                                                                      // добавляю свойство 'припятствия'
   status,
   tickInterval: null,
 
@@ -281,6 +280,7 @@ const game = {
   reset() {
     this.stop();
     this.snake.init(this.getStartSnakeBody(), 'up');
+    this.fence.init(this.getFenceCoordinates());                          // инициализирую 'припятствия' при старте
     this.food.setCoordinates(this.getRandomFreeCoordinates());
     this.render();
     this.foodCount()
@@ -296,7 +296,7 @@ const game = {
   },
 
   getRandomFreeCoordinates() {
-    const exclude = [this.food.getCoordinates(), ...this.fence.getCoordinates(), ...this.snake.getBody()];
+    const exclude = [this.food.getCoordinates(), ...this.fence.getCoordinates(), ...this.snake.getBody()];    // добавляю координаты припятствий
 
     while (true) {
       const rndPoint = {
@@ -306,6 +306,15 @@ const game = {
 
       if (!exclude.some((exPoint) => rndPoint.x === exPoint.x && rndPoint.y === exPoint.y)) return rndPoint;
     }
+  },
+
+  getFenceCoordinates () {                                                                     // генерирую координаты точек для "припятствий"
+    const points = [];
+    for (let i = 0; i < Math.floor((this.config.getRowsCount() * this.config.getRowsCount()) * 0.02); i++) {   // кол-во припятствий 2% от общего кол-ва клеток поля
+    const spam = this.getRandomFreeCoordinates();
+    points.push(spam)
+    }
+    return points
   },
 
   play() {
@@ -340,10 +349,10 @@ const game = {
     if (this.isOnFood()) {
       this.snake.growUp();
       this.food.setCoordinates(this.getRandomFreeCoordinates());
-
+      this.fence.init(this.getFenceCoordinates());                  // генерация новых припятствий при погощении еды
+      this.foodCount()                                              // обновляю счетчик еды
       if (this.isGameWon()) this.finish();
     }
-    this.foodCount()
     this.snake.makeStep();
     this.render();
   },
@@ -421,10 +430,10 @@ const game = {
   },
 
   render() {
-    this.map.render(this.snake.getBody(), this.food.getCoordinates(), this.fence.getCoordinates());
+    this.map.render(this.snake.getBody(), this.food.getCoordinates(), this.fence.getCoordinates()); // добавляю координаты припятствий в карту
   },
-  foodCount () {
-    document.getElementById('counter').innerHTML = `${snake.body.length - 1}`
+  foodCount ()  {                                                                                    // счетчик еды
+      document.getElementById('counter').innerHTML = `${snake.body.length - 1}`
   },
 
 };
